@@ -32,8 +32,7 @@ fs.readFile("openaiUsers.json", "utf-8", (err, data) => {
             console.log("openaiUsers.json создан");
             openaiUsers = [];
         });
-    }
-    else {
+    } else {
         openaiUsers = new Array(data);
     }
 });
@@ -46,8 +45,7 @@ fs.readFile("openaiChats.json", "utf-8", async (err, data) => {
             console.log("openaiChats.json создан");
             openaiThreads = {};
         });
-    }
-    else {
+    } else {
         openaiThreads = new Map(Object.entries(JSON.parse(data)));
     }
 });
@@ -83,6 +81,15 @@ dBot.once("ready", async () => {
     );
     await rest.put(Routes.applicationCommands(process.env.DISCORD_BOT_ID), {
         body: [
+            new SlashCommandBuilder()
+                .setName("gpt")
+                .setDescription("Вопрос к chatGPT")
+                .addStringOption((option) =>
+                    option
+                        .setName("query")
+                        .setDescription("Запрос")
+                        .setRequired(true)
+                ),
             new SlashCommandBuilder()
                 .setName("gpt-thread")
                 .setDescription("Создать длительный диалог с ChatGPT"),
@@ -222,8 +229,8 @@ dBot.on("messageCreate", async (message) => {
     ];
 
     try {
-        // получаем 24 последних сообщений
-        let prevMessages = await message.channel.messages.fetch({ limit: 24 });
+        // получаем 32 последних сообщений
+        let prevMessages = await message.channel.messages.fetch({ limit: 32 });
 
         // инвертируем сообщения
         prevMessages.reverse();
@@ -248,15 +255,25 @@ dBot.on("messageCreate", async (message) => {
         await message.channel.sendTyping();
 
         // отправляем запрос к GPT
-        const result = await openai
+        let result;
+        result = await openai
             .createChatCompletion({
                 model: "gpt-3.5-turbo",
                 messages: conversationLog,
             })
             .catch(async (error) => {
-                console.log(`OPENAI ERR: ${error}`);
-                await message.channel.send("Попробуйте ещё раз позже.");
-                return;
+                // отжидаемся
+                setTimeout(() => {}, 10000);
+                result = await openai
+                    .createChatCompletion({
+                        model: "gpt-3.5-turbo",
+                        messages: conversationLog,
+                    })
+                    .catch(async (error) => {
+                        console.log(`OPENAI ERR: ${error}`);
+                        await message.channel.send("Попробуйте ещё раз позже.");
+                        return;
+                    });
             });
 
         // разбиваем ответ на сообщения в 2000 символов
