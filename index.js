@@ -284,7 +284,7 @@ dBot.on("messageCreate", async (message) => {
             i += 2000
         ) {
             responses.push(
-                result.data.choices[0].message.content.substr(i, 2000)
+                result.data.choices[0].message.content.substr(i, i + 2000)
             );
         }
 
