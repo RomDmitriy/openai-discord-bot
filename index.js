@@ -99,34 +99,34 @@ dBot.once("ready", async () => {
         ],
     });
 
-    mainJob.start();
+    //mainJob.start();
 });
 
 // событие в 8 часов утра
-const mainJob = new CronJob(
-    "0 0 8 * * *",
-    async () => {
-        // текущая дата
-        var now = new Date();
+// const mainJob = new CronJob(
+//     "0 0 8 * * *",
+//     async () => {
+//         // текущая дата
+//         var now = new Date();
 
-        // вчерашняя дата
-        const yesterday = new Date(now).setDate(now.getDate() - 1);
-        for (let [key, value] of openaiThreads) {
-            if (Date.parse(value) < yesterday) {
-                dBot.channels.cache
-                    .get(key)
-                    .send("Тред отключен из-за неактива.");
-                openaiThreads.delete(key);
-            }
-        }
-        saveDiscordThreads();
-    },
-    null,
-    false,
-    "UTC+3",
-    null,
-    false
-);
+//         // вчерашняя дата
+//         const yesterday = new Date(now).setDate(now.getDate() - 1);
+//         for (let [key, value] of openaiThreads) {
+//             if (Date.parse(value) < yesterday) {
+//                 dBot.channels.cache
+//                     .get(key)
+//                     .send("Тред отключен из-за неактива.");
+//                 openaiThreads.delete(key);
+//             }
+//         }
+//         saveDiscordThreads();
+//     },
+//     null,
+//     false,
+//     "UTC+3",
+//     null,
+//     false
+// );
 
 // обработка команд Discord
 dBot.on(Events.InteractionCreate, async (interaction) => {
@@ -204,7 +204,7 @@ dBot.on("messageCreate", async (message) => {
 
     try {
         // получаем 32 последних сообщений
-        let prevMessages = await message.channel.messages.fetch({ limit: 32 });
+        let prevMessages = await message.channel.messages.fetch();
 
         // инвертируем сообщения
         prevMessages.reverse();
