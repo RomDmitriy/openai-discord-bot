@@ -33,7 +33,7 @@ fs.readFile("openaiUsers.json", "utf-8", (err, data) => {
             openaiUsers = [];
         });
     } else {
-        openaiUsers = new Array(data);
+        openaiUsers = data;
     }
 });
 
@@ -130,28 +130,13 @@ const mainJob = new CronJob(
 
 // обработка команд Discord
 dBot.on(Events.InteractionCreate, async (interaction) => {
-    if (!openaiUsers[0].includes(interaction.user.id.toString())) {
-        interaction.reply("Вас нет в списке.");
+    console.log(openaiUsers)
+    if (!openaiUsers.includes(interaction.user.id.toString())) {
+        interaction.reply("В доступе отказано.");
         return;
     }
 
-    if (interaction.commandName === "track") {
-        discordUsers.set(
-            interaction.user.id.toString(),
-            interaction.options.getString("code")
-        );
-
-        saveDiscord();
-
-        await interaction.reply("Отслеживание добавлено!");
-    } else if (interaction.commandName === "stop-track") {
-        if (discordUsers.delete(interaction.user.id)) {
-            saveDiscord();
-            interaction.reply("Успешно!");
-        } else {
-            interaction.reply("Вас и так не было в списке.");
-        }
-    } else if (interaction.commandName === "gpt") {
+    if (interaction.commandName === "gpt") {
         await interaction.deferReply({ ephemeral: false });
 
         let response;
@@ -188,17 +173,6 @@ dBot.on(Events.InteractionCreate, async (interaction) => {
 
         // пишем, что тред остановлен
         await interaction.reply("Тред больше не отслеживается.");
-    } else if (interaction.commandName === "check") {
-        await interaction.deferReply({ ephemeral: false });
-        let message;
-        try {
-            message = await getTrackInfo(discordUsers.get(interaction.user.id));
-        } catch (err) {
-            interaction.editReply({ content: err.message });
-            return;
-        }
-        message = formatMessage(message);
-        interaction.editReply({ content: message });
     } else {
         interaction.reply({ content: "Такой команды нет!" });
     }
@@ -214,8 +188,8 @@ dBot.on("messageCreate", async (message) => {
     // от комментариев пользователей
     if (message.content.startsWith("#")) return;
     // от пользователей без права использовать бота
-    if (!openaiUsers[0].includes(message.author.id.toString())) {
-        interaction.reply("Вас нет в списке.");
+    if (!openaiUsers.includes(message.author.id.toString())) {
+        interaction.reply("В доступе отказано.");
         return;
     }
 
