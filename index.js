@@ -130,7 +130,6 @@ dBot.once("ready", async () => {
 
 // обработка команд Discord
 dBot.on(Events.InteractionCreate, async (interaction) => {
-    console.log(openaiUsers)
     if (!openaiUsers.includes(interaction.user.id.toString())) {
         interaction.reply("В доступе отказано.");
         return;
