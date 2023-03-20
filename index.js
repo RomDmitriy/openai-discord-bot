@@ -236,6 +236,7 @@ dBot.on("messageCreate", async (message) => {
                 messages: conversationLog,
             })
             .catch(async (error) => {
+                console.log(error);
                 // отжидаемся
                 setTimeout(() => {}, 10000);
                 result = await openai
@@ -249,6 +250,9 @@ dBot.on("messageCreate", async (message) => {
                         return;
                     });
             });
+
+        if (result === undefined)
+            message.reply('Не пришёл ответ от нейросети.');
 
         // разбиваем ответ на сообщения в 2000 символов
         let responses = [];
