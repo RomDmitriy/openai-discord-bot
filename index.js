@@ -1,5 +1,4 @@
 import { Configuration, OpenAIApi } from "openai";
-import { CronJob } from "cron";
 import * as fs from "fs";
 import * as dotenv from "dotenv";
 import {
@@ -99,38 +98,11 @@ dBot.once("ready", async () => {
         ],
     });
 
-    mainJob.start();
+    //mainJob.start();
 });
-
-// событие в 8 часов утра
-const mainJob = new CronJob(
-    "0 0 8 * * *",
-    async () => {
-        // текущая дата
-        var now = new Date();
-
-        // вчерашняя дата
-        const yesterday = new Date(now).setDate(now.getDate() - 1);
-        for (let [key, value] of openaiThreads) {
-            if (Date.parse(value) < yesterday) {
-                dBot.channels.cache
-                    .get(key)
-                    .send("Тред отключен из-за неактива.");
-                openaiThreads.delete(key);
-            }
-        }
-        saveDiscordThreads();
-    },
-    null,
-    false,
-    "UTC+3",
-    null,
-    false
-);
 
 // обработка команд Discord
 dBot.on(Events.InteractionCreate, async (interaction) => {
-    console.log(openaiUsers)
     if (!openaiUsers.includes(interaction.user.id.toString())) {
         interaction.reply("В доступе отказано.");
         return;
@@ -203,8 +175,8 @@ dBot.on("messageCreate", async (message) => {
     ];
 
     try {
-        // получаем 32 последних сообщений
-        let prevMessages = await message.channel.messages.fetch({ limit: 32 });
+        // получаем сообщения
+        let prevMessages = await message.channel.messages.fetch();
 
         // инвертируем сообщения
         prevMessages.reverse();
@@ -236,6 +208,7 @@ dBot.on("messageCreate", async (message) => {
                 messages: conversationLog,
             })
             .catch(async (error) => {
+                console.log(error);
                 // отжидаемся
                 setTimeout(() => {}, 10000);
                 result = await openai
@@ -249,6 +222,9 @@ dBot.on("messageCreate", async (message) => {
                         return;
                     });
             });
+
+        if (result === undefined)
+            message.reply('Не пришёл ответ от нейросети.');
 
         // разбиваем ответ на сообщения в 2000 символов
         let responses = [];
