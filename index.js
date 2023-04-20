@@ -161,7 +161,7 @@ dBot.on("messageCreate", async (message) => {
     if (message.content.startsWith("#")) return;
     // от пользователей без права использовать бота
     if (!openaiUsers.includes(message.author.id.toString())) {
-        interaction.reply("В доступе отказано.");
+        message.reply("В доступе отказано.");
         return;
     }
 
